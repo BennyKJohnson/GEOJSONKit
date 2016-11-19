@@ -1,0 +1,35 @@
+{ "type": "FeatureCollection",
+    "layerName": "My data",
+    "features": [
+{ "type": "Feature",
+"bbox": [-10.0, -10.0, 11.0, 10.0],
+ "geometry": {"type": "Point", "coordinates": [0.5]},
+ "properties": {"prop0": "value0"}
+ },
+ { "type": "Feature",
+ "bbox": [-10.0, -10.0, 11.0, 10.0],
+  "geometry": {"type": "MultiPoint", "coordinates": [1.0,0.0]},
+  "properties": {"prop0": "value0"}
+  },
+  { "type": "Feature",
+  "bbox": [-10.0, -10.0, 11.0, 10.0],
+  "geometry": {"type": "Polygon", "coordinates": [1.0,0.0]},
+  "properties": {"prop0": "value0"}
+  },
+  { "type": "Feature",
+  "bbox": [-10.0, -10.0, 11.0, 10.0],
+  "geometry": {"type": "MultiPoint"},
+  "properties": {"prop0": "value0"}
+  },
+  { "type": "Feature",
+  "bbox": [-10.0, -10.0, 11.0, 10.0],
+  "geometry": {"type": "MyPoint",  "coordinates": [1.0,0.0]},
+  "properties": {"prop0": "value0"}
+  },
+  { "type": "Feature",
+  "bbox": [-10.0, -10.0, 11.0, 10.0],
+  "geometry": {"type": "GeometryCollection",  "coordinates": [1.0,0.0]},
+  "properties": {"prop0": "value0"}
+  },
+]
+}
