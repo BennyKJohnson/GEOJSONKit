@@ -41,6 +41,44 @@ class GEOJSONKitTests: XCTestCase {
 
     }
     
+    func sampleCode() -> GEOJSONFeatureCollection<GEOJSONLocationCoordinate>? {
+        
+        let jsonURL = URL(fileURLWithPath: self.path() + "/Supporting/FeatureCollection.json")
+        
+        let jsonData = try! Data(contentsOf: jsonURL)
+        guard let jsonObject = (try? JSONSerialization.jsonObject(with: jsonData, options: [])) as? [String: Any] else {
+            return nil
+        }
+        
+        let featureCollection = GEOJSONFeatureCollection<GEOJSONLocationCoordinate>(json: jsonObject)!
+        
+        // Access Foriegn members
+        let layerName = featureCollection["layerName"] as? String
+        
+        for feature in featureCollection.features {
+            
+            // Feature Properties
+            let name = feature.properties["name"] as? String
+            
+            // Bounding Box
+            let boundingBox = feature.boundingBox
+            
+            // Geometry
+            let geometry = feature.geometry
+            
+            switch geometry {
+            case .point(let coordinate):
+                print("Found coordinate: \(coordinate)")
+            case .polygon(let polygon):
+                print("Found Polygon: \(polygon)")
+            default:
+                print("Found Other Geometry")
+            }
+        }
+        
+        return nil
+    }
+    
     func testGEOJSONGeometryCollection() {
         let geometryCollectionDictionary = loadJSON(filename: "GeometryCollection.json")
         let geometryArray = geometryCollectionDictionary["geometries"] as? [[String: Any]] ?? []

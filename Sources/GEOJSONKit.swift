@@ -14,19 +14,19 @@ public protocol GEOJSONType {
 
 enum GEOJSONGeometryType: String {
     
-    case point = "Point"
+    case point = "point"
     
-    case multiPoint = "MultiPoint"
+    case multiPoint = "multipoint"
     
-    case lineString = "LineString"
+    case lineString = "linestring"
     
-    case multiLineString = "MultiLineString"
+    case multiLineString = "multilinestring"
     
-    case polygon = "Polygon"
+    case polygon = "polygon"
     
-    case multiPolygon = "MultiPolygon"
+    case multiPolygon = "multipolygon"
     
-    case geometryCollection = "GeometryCollection"
+    case geometryCollection = "geometrycollection"
     
 }
 
@@ -44,21 +44,21 @@ public struct GEOJSONLocationCoordinate: GEOJSONCoordinateType {
 
 public enum GEOJSONGeometry<CoordinateType: GEOJSONCoordinateType>: GEOJSONType  {
     
-    case point(GEOJSONCoordinateType)
+    case point(CoordinateType)
     
-    case polygon([[GEOJSONCoordinateType]])
+    case polygon([[CoordinateType]])
     
-    case lineString([GEOJSONCoordinateType])
+    case lineString([CoordinateType])
     
-    case multiPoint([GEOJSONCoordinateType])
+    case multiPoint([CoordinateType])
     
-    case multiLineString([[GEOJSONCoordinateType]])
+    case multiLineString([[CoordinateType]])
     
-    case multiPolygon([[[GEOJSONCoordinateType]]])
+    case multiPolygon([[[CoordinateType]]])
     
     case geometryCollection([GEOJSONGeometry])
     
-    static func parseCoordinate(value: Any) -> GEOJSONCoordinateType? {
+    static func parseCoordinate(value: Any) -> CoordinateType? {
         
         guard let coordinateValues = value as? [NSNumber], coordinateValues.count == 2
         else {
@@ -71,30 +71,30 @@ public enum GEOJSONGeometry<CoordinateType: GEOJSONCoordinateType>: GEOJSONType 
         return CoordinateType(latitude: latitude, longitude: longitude)
     }
     
-    static func parseCoordinates(value: Any) -> [GEOJSONCoordinateType]? {
+    static func parseCoordinates(value: Any) -> [CoordinateType]? {
         
         guard let coordinateValues = value as? [[NSNumber]] else {
             return nil
         }
         
-        return coordinateValues.map({ (coordinateValue) -> GEOJSONCoordinateType in
+        return coordinateValues.map({ (coordinateValue) -> CoordinateType in
             return parseCoordinate(value: coordinateValue)!
         })
     }
     
-    static func parseNestedCoordinates(value: Any) -> [[GEOJSONCoordinateType]]? {
+    static func parseNestedCoordinates(value: Any) -> [[CoordinateType]]? {
         guard let coordinateValues = value as? [[[NSNumber]]] else {
             return nil
         }
         
-        return coordinateValues.map({ (coordinateCollection) -> [GEOJSONCoordinateType] in
+        return coordinateValues.map({ (coordinateCollection) -> [CoordinateType] in
             return parseCoordinates(value: coordinateCollection)!
         })
     }
     
     public init?(json: [String: Any]) {
         guard
-            let rawTypeValue = json["type"] as? String,
+            let rawTypeValue = (json["type"] as? String)?.lowercased(),
             let type = GEOJSONGeometryType(rawValue: rawTypeValue)
             else {
                 return nil
@@ -129,7 +129,7 @@ public enum GEOJSONGeometry<CoordinateType: GEOJSONCoordinateType>: GEOJSONType 
                 }
             case .multiPolygon:
                 if let coordinateCollections = coordinatesValue as? [[[[NSNumber]]]] {
-                    let geometryValue = coordinateCollections.map({ (coordinateCollection) -> [[GEOJSONCoordinateType]] in
+                    let geometryValue = coordinateCollections.map({ (coordinateCollection) -> [[CoordinateType]] in
                         return GEOJSONGeometry.parseNestedCoordinates(value: coordinateCollection)!
                     })
                     
@@ -152,6 +152,17 @@ public enum GEOJSONGeometry<CoordinateType: GEOJSONCoordinateType>: GEOJSONType 
         }
         
         return nil
+    }
+}
+
+extension GEOJSONGeometry {
+    public var point: CoordinateType? {
+        switch self {
+        case .point(let coordinate):
+            return coordinate
+        default:
+            return nil
+        }
     }
 }
 
@@ -210,7 +221,11 @@ public struct GEOJSONFeature<FeatureGeometryCoordinateType: GEOJSONCoordinateTyp
     
     public init?(json: [String: Any]) {
         
-        identifier = json["id"] as? GEOJSONIdentifierType
+        if let number = json["id"] as? NSNumber {
+            identifier = number.intValue
+        } else {
+            identifier = json["id"] as? GEOJSONIdentifierType
+        }
         
         guard
             let propertiesDictionary = json["properties"] as? [String: Any],
